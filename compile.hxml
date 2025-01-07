@@ -1,0 +1,9 @@
+-lib heaps
+-lib liquidfun
+-lib polygonal-ds
+-cp src
+-js game.js
+-main Main
+# liquidfun is a bit old
+-D no-deprecation-warnings
+-debug
