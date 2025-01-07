@@ -5,16 +5,15 @@ import box2d.common.Vec2;
 import box2d.dynamics.World;
 
 class PhysicalWorld {
-    static final physicsScale = 1.0;
-    public static var gameWorld = new World(new Vec2(0, 0));
+    public static var world = new World(new Vec2(0, 0));
 
     public static function reset() {
-        gameWorld = new World(new Vec2(0, 0));
+        world = new World(new Vec2(0, 0));
     }
 
     public static function update(dt: Float) {
-        gameWorld.step(dt, 3, 3);
-        gameWorld.clearForces();
+        world.step(dt, 3, 3);
+        world.clearForces();
         MessageManager.sendMessage(new PhysicsStepDoneMessage());
     }
 }

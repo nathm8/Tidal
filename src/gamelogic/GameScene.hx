@@ -1,24 +1,32 @@
 package gamelogic;
 
-import gamelogic.Updateable;
-import gamelogic.physics.PhysicalWorld;
 import h2d.Scene;
 import h2d.Text;
 import h2d.col.Point;
 import hxd.Timer;
+import hxd.Key;
+import gamelogic.physics.PhysicalWorld;
+import gamelogic.Updateable;
 import utilities.MessageManager;
 
 class GameScene extends Scene implements MessageListener {
 	var updateables = new Array<Updateable>();
 	var fpsText: Text;
+	var cameraScale: Float;
 
 	public function new() {
 		super();
 		fpsText = new h2d.Text(hxd.res.DefaultFont.get(), this);
-		fpsText.visible = false;
+		fpsText.visible = true;
 		defaultSmooth = true;
+		camera.anchorX = 0.5;
+		camera.anchorY = 0.5;
+		cameraScale = 1.0;
 
 		MessageManager.addListener(this);
+
+		var p = new Planet(this);
+        updateables.push(p);
 	}
 
 	public function update(dt:Float) {
@@ -26,13 +34,33 @@ class GameScene extends Scene implements MessageListener {
 		for (u in updateables)
 			u.update(dt);
 
+		cameraControl();
 		fpsText.text = Std.string(Math.round(Timer.fps()));
-		var p = new Point(20, 20);
+		var p = new Point(980, 20);
 		camera.screenToCamera(p);
 		fpsText.setPosition(p.x, p.y);
 	}
 
 	public function receiveMessage(msg:Message):Bool {
 		return false;
+	}
+
+	function cameraControl() {
+		if (Key.isDown(Key.A))
+			camera.move(-10,0);
+		if (Key.isDown(Key.D))
+			camera.move(10,0);
+		if (Key.isDown(Key.W))
+			camera.move(0,-10);
+		if (Key.isDown(Key.S))
+			camera.move(0,10);
+		if (Key.isReleased(Key.E))
+			if (cameraScale < 1.5)
+				cameraScale += 0.1;
+		if (Key.isReleased(Key.Q))
+			if (cameraScale > 0.5)
+				cameraScale -= 0.1;
+		camera.setScale(cameraScale, cameraScale);
+		fpsText.setScale(1 / cameraScale);
 	}
 }

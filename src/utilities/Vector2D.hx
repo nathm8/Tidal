@@ -369,6 +369,13 @@ import box2d.common.Vec2;
 	@:to public inline function toBox2DVec():Vec2 return cast this;
 	#end
 
+	#if liquidfun
+	@:from public static inline function fromBox2DPoint(v: Vec2):Vector2D return cast v;
+
+	/** Cast this Vector2D to Heaps Point class. They unify because both have same component values. **/
+	@:to public inline function toBox2DVec():Vec2 return cast this;
+	#end
+
 	public inline function toString(prefix:String = null):String {
 		return (if (prefix != null) '${prefix}=' else '') + '{x:${this.x}, y:${this.y}}';
 	}

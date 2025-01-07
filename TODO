@@ -1,0 +1,22 @@
+TODO
+===============
+
+Planet
+---------------
+make into static body
+    triangulate to centre
+
+Moon
+---------------
+Use code from Orbital Bombardment, put it on a rail around the planet
+
+Sliders?
+
+Water Particle
+---------------
+Generate, evenly across the surface
+Simple alpha-sprite for first-pass graphics
+
+N-Body Gravity
+---------------
+Publisher\subscriber system
