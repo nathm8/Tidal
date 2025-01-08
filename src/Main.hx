@@ -41,6 +41,7 @@ class Main extends hxd.App implements MessageListener {
 		MessageManager.reset();
 		gameScene = new GameScene();
 		setScene2D(gameScene);
+		PhysicalWorld.setScene(gameScene);
 		SoundManager.reset();
 		MessageManager.addListener(this);
 	}

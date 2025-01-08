@@ -33,7 +33,6 @@ class GameScene extends Scene implements MessageListener {
 		PhysicalWorld.update(dt);
 		for (u in updateables)
 			u.update(dt);
-
 		cameraControl();
 		fpsText.text = Std.string(Math.round(Timer.fps()));
 		var p = new Point(980, 20);

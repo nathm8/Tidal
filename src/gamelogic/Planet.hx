@@ -1,5 +1,7 @@
 package gamelogic;
 
+import box2d.common.Vec2;
+import box2d.particle.ParticleGroupDef;
 import h3d.Vector;
 import box2d.collision.shapes.PolygonShape;
 import box2d.dynamics.Body;
@@ -83,6 +85,7 @@ class Planet implements Updateable {
         // physics
         var body_definition = new BodyDef();
         body_definition.type = BodyType.STATIC;
+        body_definition.position = new Vector2D(0,0);
         var body = PhysicalWorld.world.createBody(body_definition);
         var last = points[points.length - 1];
         for (p in points) {
@@ -95,22 +98,31 @@ class Planet implements Updateable {
 
             var fixture_definition = new FixtureDef();
             fixture_definition.shape = poly;
-            var fix = body.createFixture(fixture_definition);
+            body.createFixture(fixture_definition);
             
             last = p;
         }
-        
+        body.setActive(true);
+
+        var pd : ParticleGroupDef = new ParticleGroupDef();
+        pd.flags = 0;
+    
+        var shape : PolygonShape = new PolygonShape();
+        shape.setAsBox2(9.0, 9.0, new Vec2(0.0, 10.0), 0.0);
+    
+        pd.shape = shape;
+        PhysicalWorld.world.createParticleGroup(pd);
     }
 
     public function initGraphics(parent: Object) {
         graphics = new Graphics(parent);
         // no outline
-        graphics.beginFill();
-        for (p in points)
-            graphics.addVertex(p.x - centroid.x, p.y - centroid.y, 0.0, 7.0, 0.0, 1.0);
-        // close the circle
-        graphics.addVertex(points[0].x - centroid.x, points[0].y - centroid.y, 0.0, 7.0, 0.0, 1.0);
-        graphics.endFill();
+        // graphics.beginFill();
+        // for (p in points)
+        //     graphics.addVertex(p.x - centroid.x, p.y - centroid.y, 0.0, 7.0, 0.0, 1.0);
+        // // close the circle
+        // graphics.addVertex(points[0].x - centroid.x, points[0].y - centroid.y, 0.0, 7.0, 0.0, 1.0);
+        // graphics.endFill();
     }
 
     public function getPosition(): Vector2D {
