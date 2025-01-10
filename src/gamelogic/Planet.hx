@@ -1,5 +1,7 @@
 package gamelogic;
 
+import box2d.collision.shapes.ChainShape;
+import box2d.collision.shapes.EdgeShape;
 import box2d.dynamics.Body;
 import box2d.particle.ParticleType;
 import box2d.particle.ParticleDef;
@@ -88,35 +90,29 @@ class Planet implements Updateable {
 
         // physics
         var body_definition = new BodyDef();
-        body_definition.type = BodyType.DYNAMIC;
+        body_definition.type = BodyType.KINEMATIC;
         body_definition.position = -centroid;
         body_definition.angularVelocity = 0.05;
         worldBody = PhysicalWorld.world.createBody(body_definition);
-        var last = points[points.length - 1];
-        for (p in points) {
-            var poly = new PolygonShape();
-            var verts = new haxe.ds.Vector<box2d.common.Vec2>(3);
-            verts[0] = last;
-            verts[1] = centroid;
-            verts[2] = p;
-            poly.set(verts, 3);
-
-            var fixture_definition = new FixtureDef();
-            fixture_definition.shape = poly;
-            fixture_definition.friction = 0;
-            fixture_definition.density = 100;
-            worldBody.createFixture(fixture_definition);
-            
-            last = p;
-        }
-
+        var edge = new ChainShape();
+        var loop = new haxe.ds.Vector<Vec2>(points.length);
+        for (i in 0...points.length)
+            loop[i] = points[i];
+        edge.createLoop(loop, points.length);
+        var fixture_definition = new FixtureDef();
+        fixture_definition.shape = edge;
+        worldBody.createFixture(fixture_definition);
+        
         var particle_def = new ParticleDef();
         particle_def.flags = ParticleType.b2_waterParticle;
-        var num_particles = 3000;
+        var num_particles = 2000;
         var spawn_dist = heightmap.fold(Math.max, heightmap[0]) - centroid.magnitude + 10;
-        for (i in 0...num_particles) {
-            particle_def.position = new Vector2D(spawn_dist,0).rotateAroundAngle(2*Math.PI*i/num_particles);
-            PhysicalWorld.world.createParticle(particle_def);
+        var third = Math.floor(num_particles/3);
+        for (j in 0...3) {
+            for (i in 0...third) {
+                particle_def.position = new Vector2D(spawn_dist+j*5,0).rotateAroundAngle(2*Math.PI*i/third);
+                PhysicalWorld.world.createParticle(particle_def);
+            }
         }
     }
 
@@ -147,9 +143,10 @@ class Planet implements Updateable {
         for (i in 0...PhysicalWorld.world.getParticleCount()) {
             var dirc : Vector2D = PhysicalWorld.world.getParticlePositionBuffer()[i].sub(worldBody.getPosition());
             var dist = dirc.magnitude;
-            var force : Vector2D = -100*dirc.normalize();
+            // var force : Vector2D = -100*dirc.normalize();
+            var force : Vector2D = -2500000/(dist*dist)*dirc.normalize();
+            // trace(force.magnitude);
 
-            // var force : Vector2D = -1000000/(dist*dist)*dirc.normalize();
             // var force : Vector2D = 1000/(dist*dist)*pos.normalize();
             buff[i] = buff[i].add(force*dt);
         }
