@@ -1,8 +1,11 @@
 -lib heaps
 -lib liquidfun
 -lib polygonal-ds
+# -lib hlsdl
 -cp src
 -js game.js
+# -D windowSize=1000x1000
+# -hl bin/game.hl
 -main Main
 # liquidfun is a bit old
 -D no-deprecation-warnings

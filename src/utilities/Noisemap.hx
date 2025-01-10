@@ -15,7 +15,7 @@ class Noisemap {
 		for (s in [1, 2, 3]) {
 			var x = Math.cos(theta)/s + 1;
 			var y = Math.sin(theta)/s + 1;
-			n += s*noise.perlin(seed, x, y, s);
+			n += s*noise.perlin(seed, x, y, s, 5, 2.2);
 		}
 		return n;
     }

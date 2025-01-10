@@ -9,7 +9,6 @@ import box2d.dynamics.World;
 
 class PhysicalWorld {
     public static var world(get, null): World;
-    public static var particles(get, null): ParticleSystem;
     static var init = false;
     static var debugDraw: HeapsDebugDraw;
 
@@ -27,13 +26,7 @@ class PhysicalWorld {
         init = true;
         world = new World(new Vec2(0, 0));
         world.setDebugDraw(debugDraw);
-        particles = new ParticleSystem(world);
-    }
-
-    public static function get_particles() : ParticleSystem {
-        if (!init) init = true;
-        initialise();
-        return particles;
+        world.setParticleRadius(1);
     }
 
     public static function get_world() : World {
@@ -45,6 +38,7 @@ class PhysicalWorld {
     public static function update(dt: Float) {
         world.step(dt, 3, 3);
         world.clearForces();
+        debugDraw.clear();
         world.drawDebugData();
         MessageManager.sendMessage(new PhysicsStepDoneMessage());
     }

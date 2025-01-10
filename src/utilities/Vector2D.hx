@@ -356,24 +356,17 @@ import box2d.common.Vec2;
 	
 	#if heaps
 	/** Cast Heaps Point to Vector2D. They unify because both have same component values. **/
-	@:from public static inline function fromHeapsPoint(point:h2d.col.Point):Vector2D return cast point;
+	@:from public static inline function fromHeapsPoint(point:h2d.col.Point):Vector2D return new Vector2D(point.x, point.y);
 
 	/** Cast this Vector2D to Heaps Point class. They unify because both have same component values. **/
-	@:to public inline function toHeapsPoint():h2d.col.Point return cast this;
-	#end
-
-	#if box2d
-	@:from public static inline function fromBox2DPoint(v: Vec2):Vector2D return cast v;
-
-	/** Cast this Vector2D to Heaps Point class. They unify because both have same component values. **/
-	@:to public inline function toBox2DVec():Vec2 return cast this;
+	@:to public inline function toHeapsPoint():h2d.col.Point return new h2d.col.Point(this.x, this.y);
 	#end
 
 	#if liquidfun
-	@:from public static inline function fromBox2DPoint(v: Vec2):Vector2D return cast v;
+	@:from public static inline function fromBox2DPoint(v: Vec2):Vector2D return cast new Vector2D(v.x, v.y);
 
 	/** Cast this Vector2D to Heaps Point class. They unify because both have same component values. **/
-	@:to public inline function toBox2DVec():Vec2 return cast this;
+	@:to public inline function toBox2DVec():Vec2 return new Vec2(this.x, this.y);
 	#end
 
 	public inline function toString(prefix:String = null):String {

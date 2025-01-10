@@ -53,12 +53,10 @@ class GameScene extends Scene implements MessageListener {
 			camera.move(0,-10);
 		if (Key.isDown(Key.S))
 			camera.move(0,10);
-		if (Key.isReleased(Key.E))
-			if (cameraScale < 1.5)
-				cameraScale += 0.1;
-		if (Key.isReleased(Key.Q))
-			if (cameraScale > 0.5)
-				cameraScale -= 0.1;
+		if (Key.isDown(Key.E))
+			cameraScale *= 1.1;
+		if (Key.isDown(Key.Q))
+			cameraScale *= 0.9;
 		camera.setScale(cameraScale, cameraScale);
 		fpsText.setScale(1 / cameraScale);
 	}

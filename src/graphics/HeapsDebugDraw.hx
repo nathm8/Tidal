@@ -17,7 +17,9 @@ class HeapsDebugDraw extends DebugDraw {
         super(null);
         graphics = new Graphics(parent);
         setFlags(DebugDraw.e_shapeBit);
-        trace(getFlags());
+    }
+
+    override public function flush() {
     }
 
     override public function clear() {
@@ -35,7 +37,7 @@ class HeapsDebugDraw extends DebugDraw {
                 graphics.lineStyle(1, colors[i].color);
             else
                 graphics.lineStyle(1, 0x0000ff);
-            graphics.drawCircle(c.x, c.y, radius);
+            graphics.drawCircle(c.x, c.y, radius, 16);
             i++;
         }
     }
