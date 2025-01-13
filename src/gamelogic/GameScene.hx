@@ -25,7 +25,7 @@ class GameScene extends Scene implements MessageListener {
 
 		MessageManager.addListener(this);
 
-		var p = new Planet(this);
+		var p = new Planet(this, true);
         updateables.push(p);
 	}
 

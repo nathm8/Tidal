@@ -1,12 +1,10 @@
 package gamelogic;
 
+import h2d.SpriteBatch;
 import box2d.collision.shapes.ChainShape;
-import box2d.collision.shapes.EdgeShape;
 import box2d.dynamics.Body;
-import box2d.particle.ParticleType;
 import box2d.particle.ParticleDef;
 import box2d.common.Vec2;
-import box2d.collision.shapes.PolygonShape;
 import box2d.dynamics.BodyDef;
 import box2d.dynamics.FixtureDef;
 import box2d.dynamics.BodyType;
@@ -15,6 +13,7 @@ import utilities.Vector2D;
 import utilities.RNGManager;
 import utilities.Noisemap;
 import gamelogic.physics.PhysicalWorld;
+import gamelogic.physics.WaterParticle;
 import h2d.Graphics;
 import h2d.Object;
 
@@ -38,20 +37,18 @@ class Planet implements Updateable {
     var rotationalPeriod: Float;
 
     var worldBody: Body;
+    var hasWater: Bool;
+
+    var spriteBatch: SpriteBatch;
 
     // r  - base radius
     // nr - noise radius multiplier
     // public function new(parent: Object, r = 50.0, nr = 100.0) {
-    public function new(parent: Object, r = 50.0, nr = 100.0) {
+    public function new(parent: Object, has_water: Bool, r = 150.0, nr = 150.0) {
         radius = r;
-
+        hasWater = has_water;
         generateHeightmap(nr);
-        spawnWater();
         initGraphics(parent);
-    }
-
-    function spawnWater() {
-
     }
 
     function generateHeightmap(nr: Float) {
@@ -75,6 +72,7 @@ class Planet implements Updateable {
         var i = 0;
         max = 0.0;
         for (r in heightmap) {
+            // r = 150;
             var x = r*Math.cos(2*Math.PI*i/heightmap.length);
             var y = r*Math.sin(2*Math.PI*i/heightmap.length);
             var v = new Vector2D(x, y);
@@ -91,7 +89,7 @@ class Planet implements Updateable {
         // physics
         var body_definition = new BodyDef();
         body_definition.type = BodyType.KINEMATIC;
-        body_definition.position = -centroid;
+        body_definition.position = centroid;
         body_definition.angularVelocity = 0.05;
         worldBody = PhysicalWorld.world.createBody(body_definition);
         var edge = new ChainShape();
@@ -102,29 +100,40 @@ class Planet implements Updateable {
         var fixture_definition = new FixtureDef();
         fixture_definition.shape = edge;
         worldBody.createFixture(fixture_definition);
+
+        PhysicalWorld.gravityBodies.push(worldBody);
         
-        var particle_def = new ParticleDef();
-        particle_def.flags = ParticleType.b2_waterParticle;
-        var num_particles = 2000;
-        var spawn_dist = heightmap.fold(Math.max, heightmap[0]) - centroid.magnitude + 10;
-        var third = Math.floor(num_particles/3);
-        for (j in 0...3) {
-            for (i in 0...third) {
-                particle_def.position = new Vector2D(spawn_dist+j*5,0).rotateAroundAngle(2*Math.PI*i/third);
-                PhysicalWorld.world.createParticle(particle_def);
+        // water
+        if (hasWater) {
+            var particle_def = new ParticleDef();
+            // particle_def.flags = ParticleType.b2_waterParticle | ParticleType.b2_tensileParticle | ParticleType.b2_viscousParticle;
+            var num_particles = 3000;
+            // var spawn_dist = 160;
+            var spawn_dist = heightmap.fold(Math.max, heightmap[0]) + 20;
+            var third = Math.floor(num_particles/3);
+            var index = 0;
+            for (j in 0...3) {
+                for (i in 0...third) {
+                    particle_def.position = new Vector2D(spawn_dist+j*5,0).rotateAroundAngle(2*Math.PI*i/third);
+                    PhysicalWorld.world.createParticle(particle_def);
+                }
             }
         }
     }
 
     public function initGraphics(parent: Object) {
         graphics = new Graphics(parent);
+        spriteBatch = new SpriteBatch(hxd.Res.img.water.toTile().center(), parent);
+        spriteBatch.hasUpdate = true;
+        for (i in 0...PhysicalWorld.world.getParticleCount())
+            spriteBatch.add(new WaterParticle(i));
         // no outline
-        // graphics.beginFill();
-        // for (p in points)
-        //     graphics.addVertex(p.x - centroid.x, p.y - centroid.y, 0.0, 7.0, 0.0, 1.0);
-        // // close the circle
-        // graphics.addVertex(points[0].x - centroid.x, points[0].y - centroid.y, 0.0, 7.0, 0.0, 1.0);
-        // graphics.endFill();
+        graphics.beginFill();
+        for (p in points)
+            graphics.addVertex(p.x, p.y, 0.0, 0.7, 0.0, 1.0);
+        // close the circle
+        graphics.addVertex(points[0].x, points[0].y, 0.0, 0.75, 0.0, 1.0);
+        graphics.endFill();
     }
 
     public function getPosition(): Vector2D {
@@ -143,19 +152,16 @@ class Planet implements Updateable {
         for (i in 0...PhysicalWorld.world.getParticleCount()) {
             var dirc : Vector2D = PhysicalWorld.world.getParticlePositionBuffer()[i].sub(worldBody.getPosition());
             var dist = dirc.magnitude;
-            // var force : Vector2D = -100*dirc.normalize();
-            var force : Vector2D = -2500000/(dist*dist)*dirc.normalize();
-            // trace(force.magnitude);
-
-            // var force : Vector2D = 1000/(dist*dist)*pos.normalize();
+            var force : Vector2D = -5000000/(dist*dist)*dirc.normalize();
             buff[i] = buff[i].add(force*dt);
         }
-        PhysicalWorld.world.setParticleVelocityBuffer(buff, buff.length);
-        // worldBody.applyTorque(1000000);
+        // PhysicalWorld.world.setParticleVelocityBuffer(buff, buff.length);
 
-
-        // while (time > rotationalPeriod) time -= rotationalPeriod;
-        // graphics.rotation = 2*Math.PI*time/rotationalPeriod;
+        graphics.rotation = worldBody.getAngle();
+        // graphics.x = centroid.x;
+        // graphics.y = centroid.y;
+        graphics.x = worldBody.getPosition().x;
+        graphics.y = worldBody.getPosition().y;
     }
 
     function get_minPeriapsis():Float {

@@ -1,8 +1,8 @@
 package gamelogic.physics;
 
+import box2d.dynamics.Body;
 import h2d.Object;
 import graphics.HeapsDebugDraw;
-import box2d.particle.ParticleSystem;
 import utilities.MessageManager;
 import box2d.common.Vec2;
 import box2d.dynamics.World;
@@ -11,8 +11,10 @@ class PhysicalWorld {
     public static var world(get, null): World;
     static var init = false;
     static var debugDraw: HeapsDebugDraw;
+    public static var gravityBodies = new Array<Body>();
 
     public static function reset() {
+        init = false;
         initialise();
     }
     
@@ -26,7 +28,7 @@ class PhysicalWorld {
         init = true;
         world = new World(new Vec2(0, 0));
         world.setDebugDraw(debugDraw);
-        world.setParticleRadius(2);
+        world.setParticleRadius(2.5);
     }
 
     public static function get_world() : World {
@@ -36,10 +38,10 @@ class PhysicalWorld {
     }
 
     public static function update(dt: Float) {
-        world.step(dt, 3, 3);
+        world.step(dt, 1, 1);
         world.clearForces();
-        debugDraw.clear();
-        world.drawDebugData();
+        // debugDraw.clear();
+        // world.drawDebugData();
         MessageManager.sendMessage(new PhysicsStepDoneMessage());
     }
 }
