@@ -23,6 +23,15 @@ temperature forces?
     in a replacement from the "clouds"
 look into porting static pressure
 
+graphics
+--------------
+metaball shader, to give our particles hard edges
+
+gameplay
+--------------
+have internal particular particle "mineral" pockets.
+player ships to orbit planet, shoot to push particles around or detach "solid" particles, suck them up, shoot them out elsewhere
+
 Done 
 ===============
 Planet

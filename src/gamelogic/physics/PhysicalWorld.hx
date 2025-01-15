@@ -51,7 +51,7 @@ class PhysicalWorld {
             }
         }
 
-        world.step(dt, 1, 1);
+        world.step(dt, 3, 3);
         world.clearForces();
         // debugDraw.clear();
         // world.drawDebugData();
