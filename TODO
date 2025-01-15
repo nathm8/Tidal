@@ -2,15 +2,38 @@ TODO
 ===============
 
 Planet
+------------
+Turn terrain into impermeable particle body group, implement terrain
+destruction for more dynamism
+
+Software
+------------
+Try native linux build, see if more performant
+
+UI
+------------
+Sliders for terrain bumpiness, mass scaling
+Button for spawning in additional water
+
+Water Particle
 ---------------
+change colour when at different heights, to give a "cloud" look
+temperature forces?
+    could give particles lifetimes after which they "evaporate", then spawn
+    in a replacement from the "clouds"
+look into porting static pressure
+
+Done 
+===============
+Planet
+---------------
+Add an "atmosphere" barrier
 make into static body
     triangulate to centre
 
 Moon
 ---------------
 Use code from Orbital Bombardment, put it on a rail around the planet
-
-Sliders?
 
 Water Particle
 ---------------

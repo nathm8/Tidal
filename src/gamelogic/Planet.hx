@@ -1,5 +1,6 @@
 package gamelogic;
 
+import box2d.particle.ParticleType;
 import h2d.SpriteBatch;
 import box2d.collision.shapes.ChainShape;
 import box2d.dynamics.Body;
@@ -10,7 +11,6 @@ import box2d.dynamics.FixtureDef;
 import box2d.dynamics.BodyType;
 
 import utilities.Vector2D;
-import utilities.RNGManager;
 import utilities.Noisemap;
 import gamelogic.physics.PhysicalWorld;
 import gamelogic.physics.WaterParticle;
@@ -19,13 +19,45 @@ import h2d.Object;
 
 using Lambda;
 
-class Planet implements Updateable {
+class Moon implements Updateable implements GravityBody {
+    
+    var graphics: Graphics;
+    var timeElapsed = 0.0;
+    var radius = 1000;
+    public var mass = 100000.0;
 
-    // minimum distance ships can orbit without colliding with the planet
-    public var minPeriapsis(get, null): Float;
+    public function new(parent: Object) {
+
+        graphics = new Graphics(parent);
+        // no outline
+        graphics.beginFill();
+        for (p in 0...32)
+            graphics.addVertex(100*Math.sin(2*Math.PI*p/32), 100*Math.cos(2*Math.PI*p/32), 0.7, 0.7, 0.7, 1.0);
+        // close the circle
+        graphics.addVertex(100*Math.sin(0), 100*Math.cos(0), 0.7, 0.7, 0.7, 1.0);
+        graphics.endFill();
+
+        PhysicalWorld.gravityBodies.push(this);
+    }
+
+    public function update(dt:Float) {
+        timeElapsed += dt/10;
+        graphics.x = radius*Math.sin(-timeElapsed);
+        graphics.y = radius*Math.cos(-timeElapsed);
+    }
+
+    public function getPosition() {
+        return new Vector2D(graphics.x, graphics.y);
+    }
+
+}
+
+class Planet implements Updateable implements GravityBody {
+
     // constant for how many points to use in rendering curves
-    static final PLANET_VERTICES = 100;
-    static final MASS_MULTIPLIER = 4;
+    static final PLANET_VERTICES = 64;
+    static final MASS_MULTIPLIER = 5;
+    // static final MASS_MULTIPLIER = 150;
 
     var graphics: Graphics;
     var heightmap: Array<Float>;
@@ -34,9 +66,8 @@ class Planet implements Updateable {
     var points = new Array<Vector2D>();
     public var mass = 0.0;
     var time = 0.0;
-    var rotationalPeriod: Float;
 
-    var worldBody: Body;
+    var body: Body;
     var hasWater: Bool;
 
     var spriteBatch: SpriteBatch;
@@ -52,7 +83,6 @@ class Planet implements Updateable {
     }
 
     function generateHeightmap(nr: Float) {
-        rotationalPeriod = 25 + RNGManager.rand.random(25);
         var noise = new Noisemap();
         var min = 10*radius;
         var max = 0.0;
@@ -83,7 +113,6 @@ class Planet implements Updateable {
             max = v.magnitude > max ? v.magnitude : max;
         }
         mass *= MASS_MULTIPLIER;
-        minPeriapsis = max*1.5;
         centroid /= heightmap.length;
 
         // physics
@@ -91,30 +120,40 @@ class Planet implements Updateable {
         body_definition.type = BodyType.KINEMATIC;
         body_definition.position = centroid;
         body_definition.angularVelocity = 0.05;
-        worldBody = PhysicalWorld.world.createBody(body_definition);
+        body = PhysicalWorld.world.createBody(body_definition);
         var edge = new ChainShape();
         var loop = new haxe.ds.Vector<Vec2>(points.length);
-        for (i in 0...points.length)
+        var loop2 = new haxe.ds.Vector<Vec2>(points.length);
+        var atmo_dist = heightmap.fold(Math.max, heightmap[0])*1.5;
+        for (i in 0...points.length) {
             loop[i] = points[i];
+            loop2[i] = points[i];
+            loop2[i].x = atmo_dist*Math.cos(2*Math.PI*i/points.length);
+            loop2[i].y = atmo_dist*Math.sin(2*Math.PI*i/points.length);
+        }
         edge.createLoop(loop, points.length);
         var fixture_definition = new FixtureDef();
         fixture_definition.shape = edge;
-        worldBody.createFixture(fixture_definition);
+        body.createFixture(fixture_definition);
+        // "atmosphere" barrier
+        body_definition.type = BodyType.STATIC;
+        var atmo_body = PhysicalWorld.world.createBody(body_definition);
+        edge.createLoop(loop2, points.length);
+        fixture_definition.shape = edge;
+        atmo_body.createFixture(fixture_definition);
 
-        PhysicalWorld.gravityBodies.push(worldBody);
+        PhysicalWorld.gravityBodies.push(this);
         
         // water
         if (hasWater) {
             var particle_def = new ParticleDef();
-            // particle_def.flags = ParticleType.b2_waterParticle | ParticleType.b2_tensileParticle | ParticleType.b2_viscousParticle;
-            var num_particles = 3000;
-            // var spawn_dist = 160;
+            // particle_def.flags = ParticleType.b2_waterParticle | ParticleType.b2_viscousParticle;
+            var num_particles = 4000;
             var spawn_dist = heightmap.fold(Math.max, heightmap[0]) + 20;
             var third = Math.floor(num_particles/3);
-            var index = 0;
             for (j in 0...3) {
                 for (i in 0...third) {
-                    particle_def.position = new Vector2D(spawn_dist+j*5,0).rotateAroundAngle(2*Math.PI*i/third);
+                    particle_def.position = new Vector2D(spawn_dist+j*10,0).rotateAroundAngle(2*Math.PI*i/third);
                     PhysicalWorld.world.createParticle(particle_def);
                 }
             }
@@ -132,7 +171,7 @@ class Planet implements Updateable {
         for (p in points)
             graphics.addVertex(p.x, p.y, 0.0, 0.7, 0.0, 1.0);
         // close the circle
-        graphics.addVertex(points[0].x, points[0].y, 0.0, 0.75, 0.0, 1.0);
+        graphics.addVertex(points[0].x, points[0].y, 0.0, 0.7, 0.0, 1.0);
         graphics.endFill();
     }
 
@@ -147,24 +186,9 @@ class Planet implements Updateable {
     public function update(dt: Float) {
         time += dt;
 
-        // apply gravity to each particle
-        var buff = PhysicalWorld.world.getParticleVelocityBuffer();
-        for (i in 0...PhysicalWorld.world.getParticleCount()) {
-            var dirc : Vector2D = PhysicalWorld.world.getParticlePositionBuffer()[i].sub(worldBody.getPosition());
-            var dist = dirc.magnitude;
-            var force : Vector2D = -5000000/(dist*dist)*dirc.normalize();
-            buff[i] = buff[i].add(force*dt);
-        }
-        // PhysicalWorld.world.setParticleVelocityBuffer(buff, buff.length);
-
-        graphics.rotation = worldBody.getAngle();
-        // graphics.x = centroid.x;
-        // graphics.y = centroid.y;
-        graphics.x = worldBody.getPosition().x;
-        graphics.y = worldBody.getPosition().y;
+        graphics.rotation = body.getAngle();
+        graphics.x = body.getPosition().x;
+        graphics.y = body.getPosition().y;
     }
 
-    function get_minPeriapsis():Float {
-        return minPeriapsis;
-    }
 }
