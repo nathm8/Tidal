@@ -17,7 +17,6 @@ import box2d.dynamics.BodyType;
 import utilities.Vector2D;
 import utilities.Noisemap;
 import gamelogic.physics.PhysicalWorld;
-import gamelogic.physics.UserData;
 import gamelogic.ParticleSprite;
 import h2d.Graphics;
 import h2d.Object;
@@ -48,7 +47,7 @@ class Moon implements Updateable implements GravityBody {
     }
 
     public function update(dt:Float) {
-        timeElapsed += dt/10;
+        timeElapsed += dt/5;
         graphics.x = radius*Math.sin(-timeElapsed);
         graphics.y = radius*Math.cos(-timeElapsed);
     }
@@ -64,7 +63,6 @@ class Planet implements Updateable implements GravityBody {
     // constant for how many points to use in rendering curves
     static final PLANET_VERTICES = 64;
     static final MASS_MULTIPLIER = 5;
-    // static final MASS_MULTIPLIER = 150;
 
     var graphics: Graphics;
     var heightmap: Array<Float>;
@@ -76,17 +74,19 @@ class Planet implements Updateable implements GravityBody {
 
     var body: Body;
     var hasWater: Bool;
+    var moon: Moon;
 
     var spriteBatch: SpriteBatch;
 
     // r  - base radius
     // nr - noise radius multiplier
     // public function new(parent: Object, r = 50.0, nr = 100.0) {
-    public function new(parent: Object, has_water: Bool, r = 200.0, nr = 200.0) {
+    public function new(parent: Object, has_water: Bool, r = 225.0, nr = 200.0) {
         radius = r;
         hasWater = has_water;
         initGraphics(parent);
         generateHeightmap(nr);
+        moon = new Moon(graphics);
     }
 
     function generateHeightmap(nr: Float) {
@@ -126,11 +126,12 @@ class Planet implements Updateable implements GravityBody {
         var loop = new haxe.ds.Vector<Vec2>(points.length);
         var atmo_dist = heightmap.fold(Math.max, heightmap[0])*1.5;
         var particle_group_def = new ParticleGroupDef();
-        // particle_group_def.angularVelocity = 1;
         particle_group_def.flags = ParticleType.b2_wallParticle;
         particle_group_def.groupFlags = ParticleGroupType.b2_rigidParticleGroup | ParticleGroupType.b2_solidParticleGroup;
         particle_group_def.color = new ParticleColor();
-        particle_group_def.color.g = 255;
+        particle_group_def.color.r = 10;
+        particle_group_def.color.g = 175;
+        particle_group_def.color.b = 10;
         particle_group_def.color.a = 255;
         var planet_group = PhysicalWorld.world.createParticleGroup(particle_group_def);
         particle_group_def.angularVelocity = 0;
@@ -146,9 +147,6 @@ class Planet implements Updateable implements GravityBody {
             
             loop[i] = new Vector2D(atmo_dist*Math.cos(2*Math.PI*i/points.length), atmo_dist*Math.sin(2*Math.PI*i/points.length));
         }
-        for (i in planet_group.m_firstIndex...planet_group.m_lastIndex)
-            spriteBatch.add(new ParticleSprite(i, true));
-
         // atmosphere barrier
         var body_definition = new BodyDef();
         body_definition.position = centroid;
@@ -166,10 +164,13 @@ class Planet implements Updateable implements GravityBody {
         if (hasWater) {
             var particle_def = new ParticleDef();
             particle_def.color = new ParticleColor();
+            particle_def.color.r = 100;
+            particle_def.color.g = 100;
             particle_def.color.b = 255;
             particle_def.color.a = 255;
-            particle_def.flags = ParticleType.b2_tensileParticle;
-            var num_particles = 4000;
+            particle_def.flags = ParticleType.b2_waterParticle;
+            // particle_def.flags = ParticleType.b2_tensileParticle;
+            var num_particles = 7000;
             var spawn_dist = heightmap.fold(Math.max, heightmap[0]) + 20;
             var third = Math.floor(num_particles/3);
             for (j in 0...3) {
@@ -181,11 +182,14 @@ class Planet implements Updateable implements GravityBody {
             }
         }
         trace(PhysicalWorld.world.getParticleCount());
+
+        for (i in planet_group.m_firstIndex...planet_group.m_lastIndex)
+            spriteBatch.add(new ParticleSprite(i, true));
     }
 
     public function initGraphics(parent: Object) {
         graphics = new Graphics(parent);
-        spriteBatch = new SpriteBatch(hxd.Res.img.transparent.toTile().center(), parent);
+        spriteBatch = new SpriteBatch(hxd.Res.img.transparent.toTile().center(), graphics);
         spriteBatch.hasUpdate = true;
     }
 
@@ -198,11 +202,10 @@ class Planet implements Updateable implements GravityBody {
     }
 
     public function update(dt: Float) {
-        time += dt;
+        time += dt/10;
 
-        // graphics.rotation = body.getAngle();
-        // graphics.x = body.getPosition().x;
-        // graphics.y = body.getPosition().y;
+        graphics.rotation = time;
+        moon.update(dt);
     }
 
 }

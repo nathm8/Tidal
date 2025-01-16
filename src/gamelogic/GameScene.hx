@@ -28,8 +28,6 @@ class GameScene extends Scene implements MessageListener {
 
 		var p = new Planet(this, true);
         updateables.push(p);
-		var m = new Moon(this);
-        updateables.push(m);
 	}
 
 	public function update(dt:Float) {
