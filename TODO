@@ -3,12 +3,7 @@ TODO
 
 Planet
 ------------
-Turn terrain into impermeable particle body group, implement terrain
-destruction for more dynamism
-
-Software
-------------
-Try native linux build, see if more performant
+implement terrain destruction for more dynamism
 
 UI
 ------------
@@ -21,7 +16,6 @@ change colour when at different heights, to give a "cloud" look
 temperature forces?
     could give particles lifetimes after which they "evaporate", then spawn
     in a replacement from the "clouds"
-look into porting static pressure
 
 graphics
 --------------
@@ -36,6 +30,7 @@ Done
 ===============
 Planet
 ---------------
+Turn terrain into impermeable particle body group
 Add an "atmosphere" barrier
 make into static body
     triangulate to centre
