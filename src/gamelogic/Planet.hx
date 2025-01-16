@@ -1,5 +1,6 @@
 package gamelogic;
 
+import gamelogic.physics.UserData;
 import box2d.particle.ParticleColor;
 import box2d.collision.shapes.PolygonShape;
 import box2d.particle.ParticleGroupType;
@@ -133,6 +134,8 @@ class Planet implements Updateable implements GravityBody {
         particle_group_def.color.g = 175;
         particle_group_def.color.b = 10;
         particle_group_def.color.a = 255;
+        particle_group_def.userData = new UserData();
+        particle_group_def.userData.solid = true;
         var planet_group = PhysicalWorld.world.createParticleGroup(particle_group_def);
         particle_group_def.angularVelocity = 0;
         var last = points[points.length-1];
@@ -163,6 +166,7 @@ class Planet implements Updateable implements GravityBody {
         // water
         if (hasWater) {
             var particle_def = new ParticleDef();
+            particle_def.userData = new UserData();
             particle_def.color = new ParticleColor();
             particle_def.color.r = 100;
             particle_def.color.g = 100;
@@ -177,14 +181,14 @@ class Planet implements Updateable implements GravityBody {
                 for (i in 0...third) {
                     particle_def.position = new Vector2D(spawn_dist+j*10,0).rotateAroundAngle(2*Math.PI*i/third);
                     var k = PhysicalWorld.world.createParticle(particle_def);
-                    spriteBatch.add(new ParticleSprite(k, false));
+                    spriteBatch.add(new ParticleSprite(k));
                 }
             }
         }
         trace(PhysicalWorld.world.getParticleCount());
 
         for (i in planet_group.m_firstIndex...planet_group.m_lastIndex)
-            spriteBatch.add(new ParticleSprite(i, true));
+            spriteBatch.add(new ParticleSprite(i));
     }
 
     public function initGraphics(parent: Object) {

@@ -8,9 +8,10 @@ class ParticleSprite extends BatchElement {
 
     var index: Int;
 
-    public function new(i: Int, solid: Bool) {
+    public function new(i: Int) {
         index = i;
-        if (solid)
+        var data = cast(PhysicalWorld.world.getParticleUserDataBuffer()[index], UserData);
+        if (data.solid)
             super(hxd.Res.img.solid.toTile().center());
         else
             super(hxd.Res.img.gradient.toTile().center());
