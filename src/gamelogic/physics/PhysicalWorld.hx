@@ -29,7 +29,7 @@ class PhysicalWorld {
         init = true;
         world = new World(new Vec2(0, 0));
         world.setDebugDraw(debugDraw);
-        world.setParticleRadius(2.5);
+        world.setParticleRadius(4);
     }
 
     public static function get_world() : World {

@@ -7,6 +7,11 @@ import box2d.common.Vec2;
 
 @:dox(show) private typedef Vector2DImpl = {x:Float, y:Float}
 
+// TODO
+// var PHYSICSCALE = 100;
+var PHYSICSCALE = 1;
+var PHYSICSCALEINVERT = 1/PHYSICSCALE;
+
 /**
 	Represents a two dimensional vector.
 
@@ -363,10 +368,10 @@ import box2d.common.Vec2;
 	#end
 
 	#if liquidfun
-	@:from public static inline function fromBox2DPoint(v: Vec2):Vector2D return cast new Vector2D(v.x, v.y);
+	@:from public static inline function fromBox2DPoint(v: Vec2):Vector2D return cast new Vector2D(v.x*PHYSICSCALE, v.y*PHYSICSCALE);
 
 	/** Cast this Vector2D to Heaps Point class. They unify because both have same component values. **/
-	@:to public inline function toBox2DVec():Vec2 return new Vec2(this.x, this.y);
+	@:to public inline function toBox2DVec():Vec2 return new Vec2(this.x*PHYSICSCALEINVERT, this.y*PHYSICSCALEINVERT);
 	#end
 
 	public inline function toString(prefix:String = null):String {

@@ -19,7 +19,7 @@ class GameScene extends Scene implements MessageListener {
 		super();
 		fpsText = new h2d.Text(hxd.res.DefaultFont.get(), this);
 		fpsText.visible = true;
-		defaultSmooth = true;
+		// defaultSmooth = true;
 		camera.anchorX = 0.5;
 		camera.anchorY = 0.5;
 		cameraScale = 1.0;
