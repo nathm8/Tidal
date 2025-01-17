@@ -22,7 +22,7 @@ class GameScene extends Scene implements MessageListener {
 		// defaultSmooth = true;
 		camera.anchorX = 0.5;
 		camera.anchorY = 0.5;
-		cameraScale = 1.0;
+		cameraScale = 0.6;
 
 		MessageManager.addListener(this);
 

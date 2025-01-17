@@ -1,5 +1,9 @@
 package gamelogic;
 
+import utilities.MessageManager;
+import utilities.MessageManager.AddParticleSpriteMessage;
+import utilities.MessageManager.Message;
+import utilities.MessageManager.MessageListener;
 import gamelogic.physics.UserData;
 import box2d.particle.ParticleColor;
 import box2d.collision.shapes.PolygonShape;
@@ -59,7 +63,7 @@ class Moon implements Updateable implements GravityBody {
 
 }
 
-class Planet implements Updateable implements GravityBody {
+class Planet implements Updateable implements GravityBody implements MessageListener {
 
     // constant for how many points to use in rendering curves
     static final PLANET_VERTICES = 64;
@@ -82,12 +86,13 @@ class Planet implements Updateable implements GravityBody {
     // r  - base radius
     // nr - noise radius multiplier
     // public function new(parent: Object, r = 50.0, nr = 100.0) {
-    public function new(parent: Object, has_water: Bool, r = 225.0, nr = 200.0) {
+    public function new(parent: Object, has_water: Bool, r = 200.0, nr = 200.0) {
         radius = r;
         hasWater = has_water;
         initGraphics(parent);
         generateHeightmap(nr);
         moon = new Moon(graphics);
+        MessageManager.addListener(this);
     }
 
     function generateHeightmap(nr: Float) {
@@ -127,7 +132,7 @@ class Planet implements Updateable implements GravityBody {
         var loop = new haxe.ds.Vector<Vec2>(points.length);
         var atmo_dist = heightmap.fold(Math.max, heightmap[0])*1.5;
         var particle_group_def = new ParticleGroupDef();
-        particle_group_def.flags = ParticleType.b2_wallParticle;
+        particle_group_def.flags = ParticleType.b2_wallParticle | ParticleType.b2_destructionListener;
         particle_group_def.groupFlags = ParticleGroupType.b2_rigidParticleGroup | ParticleGroupType.b2_solidParticleGroup;
         particle_group_def.color = new ParticleColor();
         particle_group_def.color.r = 10;
@@ -172,7 +177,7 @@ class Planet implements Updateable implements GravityBody {
             particle_def.color.g = 100;
             particle_def.color.b = 255;
             particle_def.color.a = 255;
-            particle_def.flags = ParticleType.b2_waterParticle;
+            particle_def.flags = ParticleType.b2_waterParticle | ParticleType.b2_destructionListener;
             // particle_def.flags = ParticleType.b2_tensileParticle;
             var num_particles = 7000;
             var spawn_dist = heightmap.fold(Math.max, heightmap[0]) + 20;
@@ -185,15 +190,15 @@ class Planet implements Updateable implements GravityBody {
                 }
             }
         }
-        trace(PhysicalWorld.world.getParticleCount());
-
+        // add planet particles last
         for (i in planet_group.m_firstIndex...planet_group.m_lastIndex)
             spriteBatch.add(new ParticleSprite(i));
+        trace(PhysicalWorld.world.getParticleCount());
     }
 
     public function initGraphics(parent: Object) {
         graphics = new Graphics(parent);
-        spriteBatch = new SpriteBatch(hxd.Res.img.transparent.toTile().center(), graphics);
+        spriteBatch = new SpriteBatch(hxd.Res.img.particle.toTile(), graphics);
         spriteBatch.hasUpdate = true;
     }
 
@@ -207,9 +212,16 @@ class Planet implements Updateable implements GravityBody {
 
     public function update(dt: Float) {
         time += dt/10;
-
-        graphics.rotation = time;
+        // trace(ParticleSprite.count, ParticleSprite.totalCount);
+        // graphics.rotation = time;
         moon.update(dt);
     }
 
+    public function receiveMessage(msg:Message):Bool {
+        if (Std.isOfType(msg, AddParticleSpriteMessage)) {
+            var params = cast(msg, AddParticleSpriteMessage);
+            spriteBatch.add(new ParticleSprite(params.i));
+        }
+        return false;
+    }
 }

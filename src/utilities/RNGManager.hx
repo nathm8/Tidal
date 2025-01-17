@@ -14,6 +14,11 @@ class RNGManager {
         rand = new Rand(seed);
     }
 
+    public static function reset() {
+        init = false;
+        initialise();
+    }
+
     public static function get_seed(): Int {
         if (!init) initialise();
         return seed;

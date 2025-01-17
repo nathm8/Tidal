@@ -26,6 +26,11 @@ class MouseMoveMessage extends Message {
 	public function new(e: Event, p: Vector2D) {super(); event = e; worldPosition = p;}
 }
 
+class AddParticleSpriteMessage extends Message {
+	public var i: Int;
+	public function new(i: Int) {super(); this.i = i;}
+}
+
 interface MessageListener {
     public function receiveMessage(msg: Message): Bool;
 }

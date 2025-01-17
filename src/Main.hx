@@ -36,13 +36,14 @@ class Main extends hxd.App implements MessageListener {
 	}
 	
 	function newGame() {
+		RNGManager.reset();
+		MessageManager.reset();
 		PhysicalWorld.reset();
 		TweenManager.reset();
-		MessageManager.reset();
+		SoundManager.reset();
 		gameScene = new GameScene();
 		setScene2D(gameScene);
 		PhysicalWorld.setScene(gameScene);
-		SoundManager.reset();
 		MessageManager.addListener(this);
 	}
 

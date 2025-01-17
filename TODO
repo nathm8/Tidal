@@ -3,7 +3,6 @@ TODO
 
 Planet
 ------------
-implement terrain destruction for more dynamism
 
 UI
 ------------
@@ -31,6 +30,7 @@ Done
 Planet
 ---------------
 Turn terrain into impermeable particle body group
+implement terrain destruction for more dynamism
 Add an "atmosphere" barrier
 make into static body
     triangulate to centre
