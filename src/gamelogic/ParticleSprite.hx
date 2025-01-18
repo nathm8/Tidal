@@ -29,10 +29,10 @@ class ParticleSprite extends BatchElement {
             return false;
         }
         var data = cast(PhysicalWorld.world.getParticleUserDataBuffer()[index], UserData);
-        if (data.solid)
-            t = tiles[0][0];
-        else
+        if (data.type == Liquid || data.type == Gas)
             t = tiles[1][0];
+        else
+            t = tiles[0][0];
 
         var p = PhysicalWorld.world.getParticlePositionBuffer()[index];
         x = p.x;
@@ -42,6 +42,7 @@ class ParticleSprite extends BatchElement {
         g = col.g/255;
         b = col.b/255;
         a = col.a/255;
+        if (data.type == Rock) a = 0.1;
         return super.update(et);
     }
 

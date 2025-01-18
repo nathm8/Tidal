@@ -1,15 +1,35 @@
 package gamelogic.physics;
 
+enum GameParticleType {
+    Rock;
+    Sand;
+    Liquid;
+    Gas;
+}
+
 // catch-all info for box2d user data
 class UserData {
-    public var solid = false;
+    public var type: GameParticleType = Liquid;
     public var sprite: ParticleSprite;
-    public var mass = 1.0;
+    public var gravityScale(get, null): Float;
 
     public function new(o:UserData = null) {
         if (o != null) {
-            solid = o.solid;
-            mass = o.mass;
+            type = o.type;
         }
+    }
+
+    function get_gravityScale():Float {
+        switch type {
+            case Rock: // should always be wall, so immovable
+                return 0.0;
+            case Sand:
+                return 2.0;
+            case Liquid:
+                return 1.0;
+            case Gas:
+                return 0.1;
+        }
+
     }
 }

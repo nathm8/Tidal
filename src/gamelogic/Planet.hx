@@ -35,7 +35,7 @@ class Moon implements Updateable implements GravityBody {
     var graphics: Graphics;
     var timeElapsed = 0.0;
     var radius = 1000;
-    public var mass = 50000.0;
+    public var mass = 45000.0;
 
     public function new(parent: Object) {
 
@@ -66,15 +66,14 @@ class Moon implements Updateable implements GravityBody {
 class Planet implements Updateable implements GravityBody implements MessageListener {
 
     // constant for how many points to use in rendering curves
-    static final PLANET_VERTICES = 64;
-    static final MASS_MULTIPLIER = 5;
+    static final PLANET_VERTICES = 128;
 
     var graphics: Graphics;
     var heightmap: Array<Float>;
     var radius: Float;
     var centroid = new Vector2D();
     var points = new Array<Vector2D>();
-    public var mass = 0.0;
+    public var mass = 100000.0;
     var time = 0.0;
 
     var body: Body;
@@ -85,7 +84,6 @@ class Planet implements Updateable implements GravityBody implements MessageList
 
     // r  - base radius
     // nr - noise radius multiplier
-    // public function new(parent: Object, r = 50.0, nr = 100.0) {
     public function new(parent: Object, has_water: Bool, r = 200.0, nr = 200.0) {
         radius = r;
         hasWater = has_water;
@@ -115,17 +113,15 @@ class Planet implements Updateable implements GravityBody implements MessageList
         var i = 0;
         max = 0.0;
         for (r in heightmap) {
-            // r = 150;
+            // r = 200;
             var x = r*Math.cos(2*Math.PI*i/heightmap.length);
             var y = r*Math.sin(2*Math.PI*i/heightmap.length);
             var v = new Vector2D(x, y);
             centroid += v;
-            mass += v.magnitude;
             points.push(v);
             i += 1;
             max = v.magnitude > max ? v.magnitude : max;
         }
-        mass *= MASS_MULTIPLIER;
         centroid /= heightmap.length;
 
         // physics
@@ -140,7 +136,7 @@ class Planet implements Updateable implements GravityBody implements MessageList
         particle_group_def.color.b = 10;
         particle_group_def.color.a = 255;
         particle_group_def.userData = new UserData();
-        particle_group_def.userData.solid = true;
+        particle_group_def.userData.type = GameParticleType.Rock;
         var planet_group = PhysicalWorld.world.createParticleGroup(particle_group_def);
         particle_group_def.angularVelocity = 0;
         var last = points[points.length-1];
@@ -172,19 +168,20 @@ class Planet implements Updateable implements GravityBody implements MessageList
         if (hasWater) {
             var particle_def = new ParticleDef();
             particle_def.userData = new UserData();
+            particle_def.userData.type = GameParticleType.Liquid;
             particle_def.color = new ParticleColor();
             particle_def.color.r = 100;
             particle_def.color.g = 100;
             particle_def.color.b = 255;
             particle_def.color.a = 255;
-            particle_def.flags = ParticleType.b2_waterParticle | ParticleType.b2_destructionListener;
-            // particle_def.flags = ParticleType.b2_tensileParticle;
-            var num_particles = 7000;
-            var spawn_dist = heightmap.fold(Math.max, heightmap[0]) + 20;
-            var third = Math.floor(num_particles/3);
-            for (j in 0...3) {
-                for (i in 0...third) {
-                    particle_def.position = new Vector2D(spawn_dist+j*10,0).rotateAroundAngle(2*Math.PI*i/third);
+            particle_def.flags = ParticleType.b2_destructionListener;
+            var num_particles = 8000;
+            var spawn_dist = heightmap.fold(Math.max, heightmap[0]);
+            var rings = 10;
+            var portions = Math.floor(num_particles/rings);
+            for (j in 0...rings) {
+                for (i in 0...portions) {
+                    particle_def.position = new Vector2D(spawn_dist+j*10,0).rotateAroundAngle(2*Math.PI*i/portions);
                     var k = PhysicalWorld.world.createParticle(particle_def);
                     spriteBatch.add(new ParticleSprite(k));
                 }
