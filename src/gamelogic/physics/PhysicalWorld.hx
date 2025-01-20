@@ -12,6 +12,8 @@ import box2d.common.Vec2;
 import box2d.dynamics.World;
 import gamelogic.GravityBody;
 
+final hertz = 1/60.0;
+
 class WorldListener implements MessageListener {
 
     public function new() {
@@ -40,6 +42,7 @@ class PhysicalWorld {
     public static var gravityBodies = new Array<GravityBody>();
     static var listener: WorldListener;
     public static var toAdd = new Array<ParticleDef>();
+    var bankedTime = 0.0;
     
     public static function reset() {
         init = false;
@@ -68,6 +71,8 @@ class PhysicalWorld {
     }
 
     public static function update(dt: Float) {
+        // bankedTime += dt;
+        // while (bankedTime )
         var buff = world.getParticleVelocityBuffer();
         for (i in 0...world.getParticleCount()) {
             // apply gravity to each particle
@@ -83,12 +88,12 @@ class PhysicalWorld {
                 var dist = dirc.magnitude;
                 var force = -gravity_scale*b.mass/dist*dirc.normalize();
                 // var force = -gravity_scale*b.mass/(dist*dist)*dirc.normalize();
-                buff[i] = buff[i].add(force*dt);
+                buff[i] = buff[i].add(force*hertz);
             }
             // reduce lifetimes, check for phase-change
         }
 
-        world.step(dt, 3, 3);
+        world.step(hertz, 4, 4);
         world.clearForces();
         while (toAdd.length > 0) {
             var pd = toAdd.pop();

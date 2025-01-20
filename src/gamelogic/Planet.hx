@@ -128,7 +128,7 @@ class Planet implements Updateable implements GravityBody implements MessageList
         var loop = new haxe.ds.Vector<Vec2>(points.length);
         var atmo_dist = heightmap.fold(Math.max, heightmap[0])*1.5;
         var particle_group_def = new ParticleGroupDef();
-        particle_group_def.flags = ParticleType.b2_wallParticle | ParticleType.b2_destructionListener;
+        particle_group_def.flags = ParticleType.b2_wallParticle | ParticleType.b2_destructionListener | ParticleType.b2_barrierParticle;
         particle_group_def.groupFlags = ParticleGroupType.b2_rigidParticleGroup | ParticleGroupType.b2_solidParticleGroup;
         particle_group_def.color = new ParticleColor();
         particle_group_def.color.r = 10;
@@ -175,7 +175,7 @@ class Planet implements Updateable implements GravityBody implements MessageList
             particle_def.color.b = 255;
             particle_def.color.a = 255;
             particle_def.flags = ParticleType.b2_destructionListener;
-            var num_particles = 8000;
+            var num_particles = 5000;
             var spawn_dist = heightmap.fold(Math.max, heightmap[0]);
             var rings = 10;
             var portions = Math.floor(num_particles/rings);
