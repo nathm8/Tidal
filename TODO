@@ -1,6 +1,12 @@
 TODO
 ===============
 
+Port static pressure particles from C++ LiquidFun
+
+implement scaling between pixels\heaps render space and Box2D physics space.
+
+Ideas
+===============
 Planet
 ------------
 Can fake Coriolis by just lagging the moon's graphics lol
@@ -16,15 +22,20 @@ change colour when at different heights, to give a "cloud" look
 temperature forces?
     could give particles lifetimes after which they "evaporate", then spawn
     in a replacement from the "clouds"
+    colour-mixing as a way to exchange temp
+    on certain temps, phase change
+    Certain types with bouyancy or other forces?
+    Light = temp?
 
 graphics
 --------------
-metaball shader, to give our particles hard edges
+🚫metaball shader, to give our particles hard edges
+    not needed, blur is fine
 
 gameplay
 --------------
 have internal particular particle "mineral" pockets.
-player ships to orbit planet, shoot to push particles around or detach "solid" particles, suck them up, shoot them out elsewhere
+player ships to orbit planet, shoot to push particles around or detach "sand" particles, suck them up, shoot them out elsewhere
 
 Done 
 ===============
