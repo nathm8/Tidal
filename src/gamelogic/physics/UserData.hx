@@ -1,6 +1,7 @@
 package gamelogic.physics;
 
 enum GameParticleType {
+    Indestructible;
     Rock;
     Sand;
     Liquid;
@@ -21,6 +22,8 @@ class UserData {
 
     function get_gravityScale():Float {
         switch type {
+            case Indestructible: // should always be wall, so immovable
+                return 0.0;
             case Rock: // should always be wall, so immovable
                 return 0.0;
             case Sand:

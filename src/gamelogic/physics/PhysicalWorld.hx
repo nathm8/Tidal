@@ -1,5 +1,6 @@
 package gamelogic.physics;
 
+import box2d.collision.AABB;
 import hxd.Timer;
 import box2d.particle.ParticleType;
 import box2d.particle.ParticleDef;
@@ -30,7 +31,13 @@ class WorldListener implements MessageListener {
             xform.p.x = params.worldPosition.x;
             xform.p.y = params.worldPosition.y;
             cast (PhysicalWorld.world.getParticleDestructionListener(), SolidParticleDestructionListener).lastEpicenter = params.worldPosition;
-            PhysicalWorld.world.destroyParticlesInShape2(shape, xform, true);
+
+            var aabb = new AABB();
+            shape.computeAABB(aabb, xform, 0);
+            var filter = new ParticleDestructionFilterQueryCallback(shape, xform);
+            PhysicalWorld.world.queryParticleAABB2(filter, aabb);
+
+            // PhysicalWorld.world.destroyParticlesInShape2(shape, xform, true);
         }
         return false;
     }
@@ -60,7 +67,7 @@ class PhysicalWorld {
         init = true;
         world = new World(new Vec2(0, 0));
         world.setDebugDraw(debugDraw);
-        world.setParticleRadius(8);
+        world.setParticleRadius(5);
         world.setParticleDestructionListener(new SolidParticleDestructionListener());
         listener = new WorldListener();
     }
@@ -73,7 +80,6 @@ class PhysicalWorld {
 
     public static function update(dt: Float) {
         bankedTime += dt;
-        var steps = 0;
         while (bankedTime >= hertz) {
             bankedTime -= hertz;
             var buff = world.getParticleVelocityBuffer();
@@ -101,9 +107,7 @@ class PhysicalWorld {
                 var pd = toAdd.pop();
                 var i = PhysicalWorld.world.createParticle(pd);
             }
-            steps++;
         }
-        trace(steps);
         // debugDraw.clear();
         // world.drawDebugData();
         MessageManager.sendMessage(new PhysicsStepDoneMessage());
