@@ -1,5 +1,7 @@
 package gamelogic.physics;
 
+import graphics.ParticleSprite;
+
 enum GameParticleType {
     Indestructible;
     Rock;

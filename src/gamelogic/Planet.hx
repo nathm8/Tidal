@@ -23,7 +23,8 @@ import box2d.dynamics.BodyType;
 import utilities.Vector2D;
 import utilities.Noisemap;
 import gamelogic.physics.PhysicalWorld;
-import gamelogic.ParticleSprite;
+import gamelogic.physics.GravityBody;
+import graphics.ParticleSprite;
 import h2d.Graphics;
 import h2d.Object;
 

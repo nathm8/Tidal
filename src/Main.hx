@@ -3,7 +3,6 @@ package;
 import utilities.SoundManager;
 import gamelogic.GameScene;
 import gamelogic.physics.PhysicalWorld;
-import graphics.TweenManager;
 import h2d.col.Point;
 import utilities.MessageManager;
 import utilities.RNGManager;
@@ -32,14 +31,12 @@ class Main extends hxd.App implements MessageListener {
 	override function update(dt:Float) {
 		if (gameScene != null)
 			gameScene.update(dt);
-		TweenManager.update(dt);
 	}
 	
 	function newGame() {
 		RNGManager.reset();
 		MessageManager.reset();
 		PhysicalWorld.reset();
-		TweenManager.reset();
 		SoundManager.reset();
 		gameScene = new GameScene();
 		setScene2D(gameScene);

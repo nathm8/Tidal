@@ -1,4 +1,4 @@
-package gamelogic;
+package graphics;
 
 import h2d.Tile;
 import gamelogic.physics.UserData;

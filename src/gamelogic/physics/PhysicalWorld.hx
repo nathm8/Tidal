@@ -12,7 +12,7 @@ import graphics.HeapsDebugDraw;
 import utilities.MessageManager;
 import box2d.common.Vec2;
 import box2d.dynamics.World;
-import gamelogic.GravityBody;
+import gamelogic.physics.GravityBody;
 
 final hertz = 1/60.0;
 
