@@ -175,7 +175,7 @@ class Planet implements Updateable implements GravityBody implements MessageList
             particle_def.color.b = 255;
             particle_def.color.a = 255;
             particle_def.flags = ParticleType.b2_destructionListener;
-            var num_particles = 5000;
+            var num_particles = 3000;
             var spawn_dist = heightmap.fold(Math.max, heightmap[0]);
             var rings = 10;
             var portions = Math.floor(num_particles/rings);

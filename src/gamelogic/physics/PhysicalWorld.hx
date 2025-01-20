@@ -1,5 +1,6 @@
 package gamelogic.physics;
 
+import hxd.Timer;
 import box2d.particle.ParticleType;
 import box2d.particle.ParticleDef;
 import box2d.common.Transform;
@@ -42,7 +43,7 @@ class PhysicalWorld {
     public static var gravityBodies = new Array<GravityBody>();
     static var listener: WorldListener;
     public static var toAdd = new Array<ParticleDef>();
-    var bankedTime = 0.0;
+    static var bankedTime = 0.0;
     
     public static function reset() {
         init = false;
@@ -59,7 +60,7 @@ class PhysicalWorld {
         init = true;
         world = new World(new Vec2(0, 0));
         world.setDebugDraw(debugDraw);
-        world.setParticleRadius(4);
+        world.setParticleRadius(8);
         world.setParticleDestructionListener(new SolidParticleDestructionListener());
         listener = new WorldListener();
     }
@@ -71,34 +72,38 @@ class PhysicalWorld {
     }
 
     public static function update(dt: Float) {
-        // bankedTime += dt;
-        // while (bankedTime )
-        var buff = world.getParticleVelocityBuffer();
-        for (i in 0...world.getParticleCount()) {
-            // apply gravity to each particle
-            for (b in gravityBodies) {
-                // walls don't move, skip gravity
-                if (world.getParticleFlagsBuffer()[i] & ParticleType.b2_wallParticle != 0)
-                    continue;
-                var data = cast(world.getParticleUserDataBuffer()[i], UserData);
-                var gravity_scale = data.gravityScale;
-                if (gravity_scale == 0)
-                    continue;
-                var dirc: Vector2D = world.getParticlePositionBuffer()[i].sub(b.getPosition());
-                var dist = dirc.magnitude;
-                var force = -gravity_scale*b.mass/dist*dirc.normalize();
-                // var force = -gravity_scale*b.mass/(dist*dist)*dirc.normalize();
-                buff[i] = buff[i].add(force*hertz);
+        bankedTime += dt;
+        var steps = 0;
+        while (bankedTime >= hertz) {
+            bankedTime -= hertz;
+            var buff = world.getParticleVelocityBuffer();
+            for (i in 0...world.getParticleCount()) {
+                // apply gravity to each particle
+                for (b in gravityBodies) {
+                    // walls don't move, skip gravity
+                    if (world.getParticleFlagsBuffer()[i] & ParticleType.b2_wallParticle != 0)
+                        continue;
+                    var data = cast(world.getParticleUserDataBuffer()[i], UserData);
+                    var gravity_scale = data.gravityScale;
+                    if (gravity_scale == 0)
+                        continue;
+                    var dirc: Vector2D = world.getParticlePositionBuffer()[i].sub(b.getPosition());
+                    var dist = dirc.magnitude;
+                    var force = -gravity_scale*b.mass/dist*dirc.normalize();
+                    // var force = -gravity_scale*b.mass/(dist*dist)*dirc.normalize();
+                    buff[i] = buff[i].add(force*hertz);
+                }
+                // reduce lifetimes, check for phase-change
             }
-            // reduce lifetimes, check for phase-change
+            world.step(hertz, 4, 4);
+            world.clearForces();
+            while (toAdd.length > 0) {
+                var pd = toAdd.pop();
+                var i = PhysicalWorld.world.createParticle(pd);
+            }
+            steps++;
         }
-
-        world.step(hertz, 4, 4);
-        world.clearForces();
-        while (toAdd.length > 0) {
-            var pd = toAdd.pop();
-            var i = PhysicalWorld.world.createParticle(pd);
-        }
+        trace(steps);
         // debugDraw.clear();
         // world.drawDebugData();
         MessageManager.sendMessage(new PhysicsStepDoneMessage());
