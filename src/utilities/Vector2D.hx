@@ -138,7 +138,7 @@ var PHYSICSCALEINVERT = 1/PHYSICSCALE;
 		return Math.atan2(this.y, this.x);
 	}
 
-	public function rotateAroundAngle(angle:Float):Vector2D {
+	public function rotate(angle:Float):Vector2D {
 		var x = this.x;
 		var y = this.y;
 		var c = Math.cos(angle);

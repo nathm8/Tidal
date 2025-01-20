@@ -1,5 +1,6 @@
 package gamelogic;
 
+import utilities.Constants.normalise;
 import utilities.MessageManager;
 import utilities.MessageManager.AddParticleSpriteMessage;
 import utilities.MessageManager.Message;
@@ -72,7 +73,6 @@ class Planet implements Updateable implements GravityBody implements MessageList
     var heightmap: Array<Float>;
     var radius: Float;
     var centroid = new Vector2D();
-    var points = new Array<Vector2D>();
     public var mass = 100000.0;
     var time = 0.0;
 
@@ -95,58 +95,76 @@ class Planet implements Updateable implements GravityBody implements MessageList
 
     function generateHeightmap(nr: Float) {
         var noise = new Noisemap();
-        var min = 10*radius;
-        var max = 0.0;
+        var bedrock_noise = new Noisemap();
         heightmap = new Array<Float>();
+        var bedrock_heightmap = new Array<Float>();
         for (i in 0...PLANET_VERTICES){
             var theta_rads = 2*Math.PI*i/PLANET_VERTICES;
-            var n = noise.getNoiseAtTheta(theta_rads);
-            heightmap.push(n);
-            min = n < min ? n : min;
-            max = n > max ? n : max;
+            heightmap.push(noise.getNoiseAtTheta(theta_rads));
+            bedrock_heightmap.push(bedrock_noise.getNoiseAtTheta(theta_rads));
         } 
-        // normalise
-        max -= min;
-        for (i in 0...PLANET_VERTICES)
-            heightmap[i] = radius + nr*(heightmap[i]-min)/max;
+        heightmap = normalise(heightmap);
+        bedrock_heightmap = normalise(bedrock_heightmap);
+        for (i in 0...PLANET_VERTICES) {
+            heightmap[i] = radius + nr*heightmap[i];
+            bedrock_heightmap[i] = radius/4 + nr*bedrock_heightmap[i]/4;
+        }
         // generate polygon
-        var i = 0;
-        max = 0.0;
-        for (r in heightmap) {
-            // r = 200;
-            var x = r*Math.cos(2*Math.PI*i/heightmap.length);
-            var y = r*Math.sin(2*Math.PI*i/heightmap.length);
-            var v = new Vector2D(x, y);
+        var points = new Array<Vector2D>();
+        var bedrock_points = new Array<Vector2D>();
+        for (i in 0...PLANET_VERTICES) {
+            var r = 2*Math.PI*i/PLANET_VERTICES;
+            var v = new Vector2D(heightmap[i], 0).rotate(r);
             centroid += v;
             points.push(v);
-            i += 1;
-            max = v.magnitude > max ? v.magnitude : max;
+            v = new Vector2D(bedrock_heightmap[i], 0).rotate(r);
+            bedrock_points.push(v);
         }
         centroid /= heightmap.length;
 
         // physics
         var loop = new haxe.ds.Vector<Vec2>(points.length);
         var atmo_dist = heightmap.fold(Math.max, heightmap[0])*1.5;
-        var particle_group_def = new ParticleGroupDef();
-        particle_group_def.flags = ParticleType.b2_wallParticle | ParticleType.b2_destructionListener | ParticleType.b2_barrierParticle;
-        particle_group_def.groupFlags = ParticleGroupType.b2_rigidParticleGroup | ParticleGroupType.b2_solidParticleGroup;
-        particle_group_def.color = new ParticleColor();
-        particle_group_def.color.r = 10;
-        particle_group_def.color.g = 175;
-        particle_group_def.color.b = 10;
-        particle_group_def.color.a = 255;
-        particle_group_def.userData = new UserData();
-        particle_group_def.userData.type = GameParticleType.Rock;
-        var planet_group = PhysicalWorld.world.createParticleGroup(particle_group_def);
-        particle_group_def.angularVelocity = 0;
-        var last = points[points.length-1];
+        var rock_group_def = new ParticleGroupDef();
+        {
+            rock_group_def.flags = ParticleType.b2_wallParticle | ParticleType.b2_destructionListener | ParticleType.b2_barrierParticle;
+            rock_group_def.groupFlags = ParticleGroupType.b2_rigidParticleGroup | ParticleGroupType.b2_solidParticleGroup;
+            rock_group_def.color = new ParticleColor();
+            rock_group_def.color.r = 10;
+            rock_group_def.color.g = 175;
+            rock_group_def.color.b = 10;
+            rock_group_def.color.a = 255;
+            rock_group_def.userData = new UserData();
+            rock_group_def.userData.type = GameParticleType.Rock;
+        }
+        var bedrock_group_def = new ParticleGroupDef();
+        {
+            bedrock_group_def.flags = ParticleType.b2_wallParticle | ParticleType.b2_destructionListener | ParticleType.b2_barrierParticle;
+            bedrock_group_def.groupFlags = ParticleGroupType.b2_rigidParticleGroup | ParticleGroupType.b2_solidParticleGroup;
+            bedrock_group_def.color = new ParticleColor();
+            bedrock_group_def.color.r = 70;
+            bedrock_group_def.color.g = 70;
+            bedrock_group_def.color.b = 70;
+            bedrock_group_def.color.a = 255;
+            bedrock_group_def.userData = new UserData();
+            bedrock_group_def.userData.type = GameParticleType.Indestructible;
+        }
+        var planet_group = PhysicalWorld.world.createParticleGroup(rock_group_def);
+        var bedrock_group = PhysicalWorld.world.createParticleGroup(bedrock_group_def);
+        var last = points.length-1;
         for (i in 0...points.length) {
             var shape = new PolygonShape();
-            var verts: Array<Vec2> = [last, centroid, points[i]];
+            var verts: Array<Vec2> = [bedrock_points[last], centroid, bedrock_points[i]];
             shape.set(Vector.fromArrayCopy(verts), 3);
-            last = points[i];
-            particle_group_def.shape = shape;
-            var particle_group = PhysicalWorld.world.createParticleGroup(particle_group_def);
+            bedrock_group_def.shape = shape;
+            var particle_group = PhysicalWorld.world.createParticleGroup(bedrock_group_def);
+            PhysicalWorld.world.joinParticleGroups(bedrock_group, particle_group);
+
+            verts = [points[last], bedrock_points[last], bedrock_points[i], points[i]];
+            shape.set(Vector.fromArrayCopy(verts), 4);
+            last = i;
+            rock_group_def.shape = shape;
+            particle_group = PhysicalWorld.world.createParticleGroup(rock_group_def);
             PhysicalWorld.world.joinParticleGroups(planet_group, particle_group);
             
             loop[i] = new Vector2D(atmo_dist*Math.cos(2*Math.PI*i/points.length), atmo_dist*Math.sin(2*Math.PI*i/points.length));
@@ -181,7 +199,7 @@ class Planet implements Updateable implements GravityBody implements MessageList
             var portions = Math.floor(num_particles/rings);
             for (j in 0...rings) {
                 for (i in 0...portions) {
-                    particle_def.position = new Vector2D(spawn_dist+j*10,0).rotateAroundAngle(2*Math.PI*i/portions);
+                    particle_def.position = new Vector2D(spawn_dist+j*10,0).rotate(2*Math.PI*i/portions);
                     var k = PhysicalWorld.world.createParticle(particle_def);
                     spriteBatch.add(new ParticleSprite(k));
                 }

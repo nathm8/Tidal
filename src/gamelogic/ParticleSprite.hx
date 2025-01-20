@@ -29,7 +29,7 @@ class ParticleSprite extends BatchElement {
             return false;
         }
         var data = cast(PhysicalWorld.world.getParticleUserDataBuffer()[index], UserData);
-        if (data.type == Rock)
+        if (data.type == Rock || data.type == Indestructible)
             t = tiles[0][0];
         else
             t = tiles[1][0];

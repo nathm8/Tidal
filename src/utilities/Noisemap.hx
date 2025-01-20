@@ -4,7 +4,7 @@ import hxd.Perlin;
 
 class Noisemap {
 	var noise = new Perlin();
-	var seed = RNGManager.seed;
+	var seed = RNGManager.rand.random(0xFFFFFF);
 	
 	public function new() {
 		noise.normalize = true;
