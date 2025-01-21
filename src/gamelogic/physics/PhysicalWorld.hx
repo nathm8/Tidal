@@ -1,7 +1,6 @@
 package gamelogic.physics;
 
 import box2d.collision.AABB;
-import hxd.Timer;
 import box2d.particle.ParticleType;
 import box2d.particle.ParticleDef;
 import box2d.common.Transform;

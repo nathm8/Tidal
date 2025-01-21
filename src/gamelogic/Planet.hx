@@ -228,8 +228,6 @@ class Planet implements Updateable implements GravityBody implements MessageList
 
     public function update(dt: Float) {
         time += dt/10;
-        // trace(ParticleSprite.count, ParticleSprite.totalCount);
-        // graphics.rotation = time;
         moon.update(dt);
     }
 

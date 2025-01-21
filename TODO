@@ -5,6 +5,10 @@ Port static pressure particles from C++ LiquidFun
 
 implement scaling between pixels\heaps render space and Box2D physics space.
 
+design an algo with a cap on distance, to use in lieu of realistic gravity
+
+rotate the planet again, translate mouse clicks from local coords to global for explosions
+
 Ideas
 ===============
 Planet
@@ -27,10 +31,6 @@ temperature forces?
     Certain types with bouyancy or other forces?
     Light = temp?
 
-graphics
---------------
-🚫metaball shader, to give our particles hard edges
-    not needed, blur is fine
 
 gameplay
 --------------
@@ -56,6 +56,7 @@ Water Particle
 Generate, evenly across the surface
 Simple alpha-sprite for first-pass graphics
 
-N-Body Gravity
----------------
-Publisher\subscriber system
+graphics
+--------------
+🚫metaball shader, to give our particles hard edges
+    not needed, blur is fine
